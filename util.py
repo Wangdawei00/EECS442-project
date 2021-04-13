@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
+import torch
 
 
 def make_plot(loss: list, accuracy: list):
@@ -18,3 +19,24 @@ def make_plot(loss: list, accuracy: list):
     x = np.arange(len(loss))
     axes[0].plot(x, accuracy)
     axes[1].plot(x, loss)
+
+
+def evaluate_model(model, loader, device):
+    """
+    Calculate and return the accuracy (average relative error) of the mode upon validation or test set.
+
+    model: the model to evaluate.
+    loader: the dataloader of test or validation set
+    device: either CPU or CUDA
+    """
+    model.eval()
+    accuracies = []
+    with torch.no_grad:
+        for batch, truth in loader:
+            batch = batch.to(device)
+            truth = truth.to(device)
+            pred = model(batch)
+            accuracies.append(torch.mean(torch.abs(pred - truth)).item())
+        accuracy = sum(accuracies) / len(accuracies)
+        print("Evaluation accuracy: {}".format(accuracy))
+    return accuracy
