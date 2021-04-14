@@ -10,7 +10,7 @@ class GradientLoss(nn.Module):
         self.convX = nn.Conv2d(1, 1, (3, 3), (1, 1), (1, 1), bias=False)
         self.convY = nn.Conv2d(1, 1, (3, 3), (1, 1), (1, 1), bias=False)
         x_gradient = np.array([[1, 0, -1], [2, 0, -2], [1, 0, -1]])
-        y_gradient = np.array([[1, 1, 1], [0, 0, 0], [-1, -1, -1]])
+        y_gradient = np.array([[1, 2, 1], [0, 0, 0], [-1, -2, -1]])
         self.convX.weight = nn.Parameter(torch.from_numpy(x_gradient).float().unsqueeze(0).unsqueeze(0))
         self.convY.weight = nn.Parameter(torch.from_numpy(y_gradient).float().unsqueeze(0).unsqueeze(0))
         for conv in [self.convY, self.convX]:
