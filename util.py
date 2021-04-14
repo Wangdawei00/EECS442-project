@@ -17,8 +17,9 @@ def make_plot(loss: list, accuracy: list):
     axes[0].set_ylabel('Accuracy')
     axes[1].set_ylabel('Loss')
     x = np.arange(len(loss))
-    axes[0].plot(x, accuracy)
-    axes[1].plot(x, loss)
+    axes[0].plot(x, accuracy, '--o')
+    axes[1].plot(x, loss, '--o')
+    plt.show()
 
 
 def evaluate_model(model, loader, device):
@@ -40,3 +41,9 @@ def evaluate_model(model, loader, device):
         accuracy = sum(accuracies) / len(accuracies)
         print("Evaluation accuracy: {}".format(accuracy))
     return accuracy
+
+
+if __name__ == '__main__':
+    loss = np.arange(10)
+    accuracy = np.arange(10) + 1
+    make_plot(loss, accuracy)
