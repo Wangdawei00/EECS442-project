@@ -26,7 +26,7 @@ def main():
             batch_size=config("cnn.batch_size"),
         )
     """
-    #pathname = "data/nyu_depth.zip"
+    # pathname = "data/nyu_depth.zip"
     pathname = "data/nyu_small.zip"
     tr_loader, va_loader, te_loader = getTrainingValidationTestingData(pathname, batch_size=config("unet.batch_size"))
 
@@ -51,20 +51,19 @@ def main():
     evaluate_epoch(
         axes, tr_loader, va_loader, te_loader, model, criterion, start_epoch, stats
     )
-    
 
     # initial val loss for early stopping
-    #prev_val_loss = stats[0][1]
+    # prev_val_loss = stats[0][1]
 
     # TODO: define patience for early stopping
-    #patience = 1
-    #curr_patience = 0
+    # patience = 1
+    # curr_patience = 0
     #
 
     # Loop over the entire dataset multiple times
     # for epoch in range(start_epoch, config('cnn.num_epochs')):
     epoch = start_epoch
-    #while curr_patience < patience:
+    # while curr_patience < patience:
     while epoch < 10:
         # Train model
         train_epoch(tr_loader, model, criterion, optimizer)
@@ -88,7 +87,7 @@ def main():
     print("Finished Training")
     # Save figure and keep plot open
     utils.save_training_plot()
-    #utils.hold_training_plot()
+    # utils.hold_training_plot()
 
 
 if __name__ == "__main__":

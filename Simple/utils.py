@@ -17,7 +17,6 @@ def config(attr):
     return node
 
 
-
 def hold_training_plot():
     """
     Keep the program alive to display the training plot
@@ -42,7 +41,7 @@ def log_training(epoch, stats):
             idx = len(metrics) * j + i
             if idx >= len(stats[-1]):
                 continue
-            print(f"\t{split} {metric}:{round(stats[-1][idx],4)}")
+            print(f"\t{split} {metric}:{round(stats[-1][idx], 4)}")
 
 
 def make_training_plot(name="UNet Training"):
@@ -85,4 +84,3 @@ def update_training_plot(axes, epoch, stats):
 def save_training_plot():
     """Save the training plot to a file."""
     plt.savefig("unet_training_plot.png", dpi=200)
-

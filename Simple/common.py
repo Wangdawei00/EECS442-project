@@ -144,32 +144,32 @@ def early_stopping(stats, curr_patience, prev_val_loss):
 
 
 def evaluate_epoch(
-    axes,
-    tr_loader,
-    val_loader,
-    te_loader,
-    model,
-    criterion,  
-    epoch,
-    stats,
-    include_test=False,
-    update_plot=True,
-    multiclass=False,
+        axes,
+        tr_loader,
+        val_loader,
+        te_loader,
+        model,
+        criterion,
+        epoch,
+        stats,
+        include_test=False,
+        update_plot=True,
+        multiclass=False,
 ):
     """Evaluate the `model` on the train and validation set."""
 
     def _get_metrics(loader):
         y_true, y_pred = [], []
-        #correct, total = 0, 0
+        # correct, total = 0, 0
 
         running_loss = []
 
-        #for X, y in loader:
+        # for X, y in loader:
         for i, batch in enumerate(loader):
             with torch.no_grad():
                 print("evaluating... batch number", i)
-                #X = torch.Tensor(batch["image"]).to("cuda")
-                #y = torch.Tensor(batch["depth"]).to(device="cuda")
+                # X = torch.Tensor(batch["image"]).to("cuda")
+                # y = torch.Tensor(batch["depth"]).to(device="cuda")
                 X = torch.Tensor(batch["image"])
                 y = torch.Tensor(batch["depth"])
 
@@ -178,21 +178,21 @@ def evaluate_epoch(
                 y_true.append(y)
                 y_pred.append(predicted)
 
-                #total += y.size(0)
+                # total += y.size(0)
 
-                #correct += (predicted == y).sum().item()
+                # correct += (predicted == y).sum().item()
 
                 # Calculate the net loss of this batch
                 depth_loss = criterion(predicted, y)
-                #gradient_loss = gradient_criterion(predicted, y, device="cuda")
+                # gradient_loss = gradient_criterion(predicted, y, device="cuda")
                 gradient_loss = gradient_criterion(predicted, y)
                 ssim_loss = torch.clamp(
-                    (1-ssim_criterion(predicted, y, 1000.0/10.0))*0.5, 
-                    min=0, 
+                    (1 - ssim_criterion(predicted, y, 1000.0 / 10.0)) * 0.5,
+                    min=0,
                     max=1
                 )
                 loss = (1.0 * ssim_loss) + (1.0 * torch.mean(gradient_loss)) + (0.1 * torch.mean(depth_loss))
-                #running_loss.append(criterion(output, y).item())
+                # running_loss.append(criterion(output, y).item())
                 running_loss.append(loss)
 
         y_true = torch.cat(y_true)
@@ -228,13 +228,12 @@ def evaluate_epoch(
         utils.update_training_plot(axes, epoch, stats)
 
 
-
 def train_epoch(data_loader, model, criterion, optimizer):
     """Train the `model` for one epoch of data from `data_loader`.
 
     Use `optimizer` to optimize the specified `criterion`
     """
-    #for i, (X, y) in enumerate(data_loader):
+    # for i, (X, y) in enumerate(data_loader):
     for i, batch in enumerate(data_loader):
         print("trainning... batch number", i)
         optimizer.zero_grad()
@@ -244,18 +243,16 @@ def train_epoch(data_loader, model, criterion, optimizer):
         # calculate loss
         depth_loss = criterion(outputs, y)
         gradient_loss = gradient_criterion(outputs, y)
-        #gradient_loss = gradient_criterion(outputs, y, device="cuda")
+        # gradient_loss = gradient_criterion(outputs, y, device="cuda")
         ssim_loss = torch.clamp(
-                (1-ssim_criterion(outputs, y, 1000.0/10.0))*0.5, 
-                min=0, 
-                max=1
-            )
+            (1 - ssim_criterion(outputs, y, 1000.0 / 10.0)) * 0.5,
+            min=0,
+            max=1
+        )
         loss = (1.0 * ssim_loss) + (1.0 * torch.mean(gradient_loss)) + (0.1 * torch.mean(depth_loss))
         loss.backward()
         optimizer.step()
     pass
-
-
 
 
 def predictions(logits):
