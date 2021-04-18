@@ -62,7 +62,7 @@ class Decoder_block(nn.Module):
         merged = torch.cat([up, skip_connection], dim=1)
 
         print(merged.size())
-        output = self.relu(self.convB(self.relu(self.convA(merged))))
+        output = self.relu(self.convB(self.convA(merged)))
         return output
 
 
@@ -124,7 +124,7 @@ class Decoder(nn.Module):
         conv1, pool1, pool2, pool3, encoder_output = features[
             2], features[4], features[7], features[14], features[19]
 
-        encoder_output = self.conv2(encoder_output)
+        encoder_output = self.conv2(F.relu(encoder_output))
 
         b1_output = self.block1(encoder_output, pool3)
         b2_output = self.block2(b1_output, pool2)
