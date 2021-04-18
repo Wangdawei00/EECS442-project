@@ -14,7 +14,7 @@ np.random.seed(42)
 random.seed(42)
 
 
-def main(device=torch.device('cuda:0')):
+def main(device=torch.device('cpu')):
     """Train CNN and show training plots."""
     # Data loaders
     """

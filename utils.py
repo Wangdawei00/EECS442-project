@@ -4,6 +4,7 @@ import torch
 from criterion import DepthLoss
 import os
 import itertools
+from tqdm import tqdm
 
 
 def config(attr):
@@ -54,8 +55,8 @@ def evaluate_model(model, loader, device):
     model.eval()
     accuracies = []
     losses = []
-    with torch.no_grad:
-        for batch, truth in loader:
+    with torch.no_grad():
+        for batch, truth in tqdm(loader):
             batch = batch.to(device)
             truth = truth.to(device)
             pred = model(batch)
