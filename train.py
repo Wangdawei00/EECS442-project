@@ -28,7 +28,7 @@ def main(device=torch.device('cuda:0')):
             batch_size=config("cnn.batch_size"),
         )
     """
-    # pathname = "data/nyu_depth.zip"
+    # pathname = "drive/MyDrive/Dense-Depth/data/nyu.zip"
     pathname = "data/nyu_small.zip"
     tr_loader, va_loader, te_loader = getTrainingValidationTestingData(pathname,
                                                                        batch_size=utils.config("unet.batch_size"))
