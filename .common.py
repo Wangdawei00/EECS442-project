@@ -1,13 +1,11 @@
-from utils import config
+from util import config
 import numpy as np
 import itertools
 import os
 import torch
 from torch.nn.functional import softmax
 from sklearn import metrics
-import utils
-from loss import ssim_loss as ssim_criterion
-from loss import gradient_loss as gradient_criterion
+# import utils
 
 
 def count_parameters(model):
@@ -183,15 +181,8 @@ def evaluate_epoch(
                 # correct += (predicted == y).sum().item()
 
                 # Calculate the net loss of this batch
-                depth_loss = criterion(predicted, y)
+                loss = criterion(predicted, y)
                 # gradient_loss = gradient_criterion(predicted, y, device="cuda")
-                gradient_loss = gradient_criterion(predicted, y)
-                ssim_loss = torch.clamp(
-                    (1 - ssim_criterion(predicted, y, 1000.0 / 10.0)) * 0.5,
-                    min=0,
-                    max=1
-                )
-                loss = (1.0 * ssim_loss) + (1.0 * torch.mean(gradient_loss)) + (0.1 * torch.mean(depth_loss))
                 # running_loss.append(criterion(output, y).item())
                 running_loss.append(loss)
 
@@ -223,9 +214,9 @@ def evaluate_epoch(
         stats_at_epoch += list(_get_metrics(te_loader))
 
     stats.append(stats_at_epoch)
-    utils.log_training(epoch, stats)
-    if update_plot:
-        utils.update_training_plot(axes, epoch, stats)
+    # utils.log_training(epoch, stats)
+    # if update_plot:
+    #     utils.update_training_plot(axes, epoch, stats)
 
 
 def train_epoch(data_loader, model, criterion, optimizer):
@@ -241,18 +232,10 @@ def train_epoch(data_loader, model, criterion, optimizer):
         y = torch.Tensor(batch["depth"])
         outputs = model(X)
         # calculate loss
-        depth_loss = criterion(outputs, y)
-        gradient_loss = gradient_criterion(outputs, y)
+        loss = criterion(outputs, y)
         # gradient_loss = gradient_criterion(outputs, y, device="cuda")
-        ssim_loss = torch.clamp(
-            (1 - ssim_criterion(outputs, y, 1000.0 / 10.0)) * 0.5,
-            min=0,
-            max=1
-        )
-        loss = (1.0 * ssim_loss) + (1.0 * torch.mean(gradient_loss)) + (0.1 * torch.mean(depth_loss))
         loss.backward()
         optimizer.step()
-    pass
 
 
 def predictions(logits):
