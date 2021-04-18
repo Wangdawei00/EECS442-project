@@ -5,7 +5,7 @@ from data import getTrainingValidationTestingData
 from model import Net
 # from common import *
 from criterion import DepthLoss
-import util
+import utils
 
 # from util import evaluate_model, make_plot, config
 
@@ -31,13 +31,13 @@ def main(device=torch.device('cuda:0')):
     # pathname = "data/nyu_depth.zip"
     pathname = "data/nyu_small.zip"
     tr_loader, va_loader, te_loader = getTrainingValidationTestingData(pathname,
-                                                                       batch_size=util.config("unet.batch_size"))
+                                                                       batch_size=utils.config("unet.batch_size"))
 
     # Model
     model = Net()
 
     # TODO: define loss function, and optimizer
-    learning_rate = util.config("unet.learning_rate")
+    learning_rate = utils.config("unet.learning_rate")
     criterion = DepthLoss(0.1)
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
     number_of_epoches = 10
@@ -47,7 +47,7 @@ def main(device=torch.device('cuda:0')):
 
     # Attempts to restore the latest checkpoint if exists
     print("Loading unet...")
-    model, start_epoch, stats = util.restore_checkpoint(model, util.config("unet.checkpoint"))
+    model, start_epoch, stats = utils.restore_checkpoint(model, utils.config("unet.checkpoint"))
 
     # axes = utils.make_training_plot()
 
@@ -68,8 +68,8 @@ def main(device=torch.device('cuda:0')):
     # patience = 1
     # curr_patience = 0
     #
-    tr_acc, tr_loss = util.evaluate_model(model, tr_loader, device)
-    acc, loss = util.evaluate_model(model, va_loader, device)
+    tr_acc, tr_loss = utils.evaluate_model(model, tr_loader, device)
+    acc, loss = utils.evaluate_model(model, va_loader, device)
     running_va_acc.append(acc)
     running_va_loss.append(loss)
     running_tr_acc.append(tr_acc)
@@ -81,9 +81,9 @@ def main(device=torch.device('cuda:0')):
     # while curr_patience < patience:
     while epoch < number_of_epoches:
         # Train model
-        util.train_epoch(tr_loader, model, criterion, optimizer)
-        tr_acc, tr_loss = util.evaluate_model(model, tr_loader, device)
-        va_acc, va_loss = util.evaluate_model(model, va_loader, device)
+        utils.train_epoch(tr_loader, model, criterion, optimizer)
+        tr_acc, tr_loss = utils.evaluate_model(model, tr_loader, device)
+        va_acc, va_loss = utils.evaluate_model(model, va_loader, device)
         running_va_acc.append(va_acc)
         running_va_loss.append(va_loss)
         running_tr_acc.append(tr_acc)
@@ -94,7 +94,7 @@ def main(device=torch.device('cuda:0')):
         # )
 
         # Save model parameters
-        util.save_checkpoint(model, epoch + 1, util.config("unet.checkpoint"), stats)
+        utils.save_checkpoint(model, epoch + 1, utils.config("unet.checkpoint"), stats)
 
         # update early stopping parameters
         """
@@ -108,7 +108,7 @@ def main(device=torch.device('cuda:0')):
     # Save figure and keep plot open
     # utils.save_training_plot()
     # utils.hold_training_plot()
-    util.make_plot(running_tr_loss, running_tr_acc, running_va_loss, running_va_acc)
+    utils.make_plot(running_tr_loss, running_tr_acc, running_va_loss, running_va_acc)
 
 
 if __name__ == "__main__":
