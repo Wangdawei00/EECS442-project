@@ -29,14 +29,14 @@ class Encoder(nn.Module):
         #         cur_input = layer_outputs[-1]
         #         cur_output = module(cur_input)
         #         layer_outputs.append(cur_output)
-        #         print("feature%d: %s\t\t%s" % (i, name, cur_output.size()))
+        # #         print("feature%d: %s\t\t%s" % (i, name, cur_output.size()))
         #         i += 1
         # dense / mobile
         for name, module in self.backbone.features._modules.items():
             cur_input = layer_outputs[-1]
             cur_output = module(cur_input)
             layer_outputs.append(cur_output)
-            print("feature%d: %s\t\t%s" % (i, name, cur_output.size()))
+            # print("feature%d: %s\t\t%s" % (i, name, cur_output.size()))
             i += 1
 
         return layer_outputs
@@ -58,7 +58,7 @@ class Decoder_block(nn.Module):
         up = self.upsample(x)
         merged = torch.cat([up, skip_connection], dim=1)
 
-        print(merged.size())
+        # print(merged.size())
         output = self.relu(self.convB(self.convA(merged)))
         return output
 
