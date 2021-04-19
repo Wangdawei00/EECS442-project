@@ -38,7 +38,7 @@ def main(device=torch.device('cuda:0')):
     model, start_epoch, stats = utils.restore_checkpoint(model, utils.config("unet.checkpoint"))
     acc, loss = utils.evaluate_model(model, te_loader, device)
     # axes = util.make_training_plot()
-    print(f'Test Accuracy:{acc}')
+    print(f'Test Error:{acc}')
     print(f'Test Loss:{loss}')
 
     # Evaluate the model

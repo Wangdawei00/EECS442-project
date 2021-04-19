@@ -67,7 +67,8 @@ def evaluate_model(model, loader, device):
             losses.append(loss(outputs, y).item())
         acc = sum(accuracies) / len(accuracies)
         loss = sum(losses) / len(losses)
-    print("Evaluation accuracy: {}".format(acc))
+    print("Evaluation Error: {}".format(acc))
+    print("Evaluation Loss: {}".format(loss))
     return acc, loss
 
 
