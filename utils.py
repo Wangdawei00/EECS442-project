@@ -41,6 +41,7 @@ def make_plot(tr_loss: list, tr_acc: list, va_loss, va_acc):
     axes[1].plot(x, tr_loss, '--o')
     axes[1].plot(x, va_loss, '--o')
     axes[1].legend(['Train', 'Validation'])
+    plt.savefig("unet_training_plot.png", dpi=200)
     plt.show()
 
 
