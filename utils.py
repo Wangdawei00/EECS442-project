@@ -56,17 +56,16 @@ def evaluate_model(model, loader, device):
     model = model.to(device)
     accuracies = []
     losses = []
-    for i, batch in enumerate(loader):
-        X = torch.Tensor(batch["image"]).to(device)
-        y = torch.Tensor(batch["depth"]).to(device)
-        #batch = batch.to(device)
-        #truth = truth.to(device)
-        outputs = model(X)
-        accuracies.append(torch.mean(torch.abs(outputs - y) / y).item())
-        loss = DepthLoss(0.1)
-        losses.append(loss(outputs, y).item())
-    acc = sum(accuracies) / len(accuracies)
-    loss = sum(losses) / len(losses)
+    with torch.no_grad():
+        for i, batch in enumerate(loader):
+            X = torch.Tensor(batch["image"]).to(device)
+            y = torch.Tensor(batch["depth"]).to(device)
+            outputs = model(X)
+            accuracies.append(torch.mean(torch.abs(outputs - y) / y).item())
+            loss = DepthLoss(0.1)
+            losses.append(loss(outputs, y).item())
+        acc = sum(accuracies) / len(accuracies)
+        loss = sum(losses) / len(losses)
     print("Evaluation accuracy: {}".format(acc))
     return acc, loss
 
