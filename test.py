@@ -28,6 +28,7 @@ def main(device=torch.device('cuda:0')):
 
     # Model
     model = Net()
+    model = model.to(device)
 
     # define loss function
     # criterion = torch.nn.L1Loss()

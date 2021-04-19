@@ -62,7 +62,7 @@ def evaluate_model(model, loader, device):
             y = torch.Tensor(batch["depth"]).to(device)
             outputs = model(X)
             accuracies.append(torch.mean(torch.abs(outputs - y) / y).item())
-            loss = DepthLoss(0.1)
+            loss = DepthLoss(0.1).to(device)
             losses.append(loss(outputs, y).item())
         acc = sum(accuracies) / len(accuracies)
         loss = sum(losses) / len(losses)
