@@ -11,7 +11,7 @@ class Encoder(nn.Module):
 
         # pretrained encoder
         # TODO
-        self.backbone = models.mobilenet_v2(pretrained=True)
+        self.backbone = models.densenet169(pretrained=True)
 
         # do not train encoder
         for param in self.backbone.parameters():
@@ -19,9 +19,6 @@ class Encoder(nn.Module):
 
     def forward(self, x):
         # get output from each layer and put into list
-        # TODO: only get the needed layers?
-        # if name in needed_layers, append
-        # https://stackoverflow.com/questions/47260715/how-to-get-the-value-of-a-feature-in-a-layer-that-match-a-the-state-dict-in-pyto
         layer_outputs = []
         layer_outputs.append(x)
         i = 1
@@ -39,7 +36,7 @@ class Encoder(nn.Module):
             cur_input = layer_outputs[-1]
             cur_output = module(cur_input)
             layer_outputs.append(cur_output)
-            # print("feature%d: %s\t\t%s" % (i, name, cur_output.size()))
+            print("feature%d: %s\t\t%s" % (i, name, cur_output.size()))
             i += 1
 
         return layer_outputs
@@ -61,7 +58,7 @@ class Decoder_block(nn.Module):
         up = self.upsample(x)
         merged = torch.cat([up, skip_connection], dim=1)
 
-        # print(merged.size())
+        print(merged.size())
         output = self.relu(self.convB(self.convA(merged)))
         return output
 
@@ -72,14 +69,14 @@ class Decoder(nn.Module):
 
         # TODO
         # dense
-        # b1_in = encoder_out + skip
-        # b1_out = encoder_out // 2
-        # b2_in = b1_out + skip // 2
-        # b2_out = b1_out // 2
-        # b3_in = b2_out + skip // 4
-        # b3_out = b2_out // 2
-        # b4_in = b3_out + skip // 4
-        # b4_out = b3_out // 2
+        b1_in = encoder_out + skip
+        b1_out = encoder_out // 2
+        b2_in = b1_out + skip // 2
+        b2_out = b1_out // 2
+        b3_in = b2_out + skip // 4
+        b3_out = b2_out // 2
+        b4_in = b3_out + skip // 4
+        b4_out = b3_out // 2
 
         # res
         # b1_in = encoder_out + skip
@@ -92,14 +89,14 @@ class Decoder(nn.Module):
         # b4_out = b3_out // 2
 
         # mobile
-        b1_in = encoder_out + skip
-        b1_out = encoder_out // 2
-        b2_in = b1_out + skip // 3
-        b2_out = b1_out // 2
-        b3_in = b2_out + skip // 4
-        b3_out = b2_out // 2
-        b4_in = b3_out + skip // 6
-        b4_out = b3_out // 2
+        # b1_in = encoder_out + skip
+        # b1_out = encoder_out // 2
+        # b2_in = b1_out + skip // 3
+        # b2_out = b1_out // 2
+        # b3_in = b2_out + skip // 4
+        # b3_out = b2_out // 2
+        # b4_in = b3_out + skip // 6
+        # b4_out = b3_out // 2
 
         # decoder blocks
         self.conv2 = nn.Conv2d(encoder_out, encoder_out,
@@ -115,14 +112,14 @@ class Decoder(nn.Module):
     def forward(self, features):
         # TODO
         # dense
-        # conv1, pool1, pool2, pool3, encoder_output = features[
-        #     3], features[4], features[6], features[8], features[12]
+        conv1, pool1, pool2, pool3, encoder_output = features[
+            3], features[4], features[6], features[8], features[12]
         # res
         # conv1, pool1, pool2, pool3, encoder_output = features[
         #     3], features[4], features[6], features[7], features[8]
         # mobile
-        conv1, pool1, pool2, pool3, encoder_output = features[
-            2], features[4], features[7], features[14], features[19]
+        # conv1, pool1, pool2, pool3, encoder_output = features[
+        #     2], features[4], features[7], features[14], features[19]
 
         encoder_output = self.conv2(F.relu(encoder_output))
 
@@ -136,14 +133,14 @@ class Decoder(nn.Module):
         return depth
 
 
-class Net(nn.Module):
+class Dense169(nn.Module):
     def __init__(self):
         super().__init__()
 
         # encoder and decoder
         self.encoder = Encoder()
         # TODO
-        self.decoder = Decoder(1280, 96)
+        self.decoder = Decoder(1664, 256)
 
     def forward(self, x):
         features = self.encoder(x)

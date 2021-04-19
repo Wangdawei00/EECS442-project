@@ -19,9 +19,6 @@ class Encoder(nn.Module):
 
     def forward(self, x):
         # get output from each layer and put into list
-        # TODO: only get the needed layers?
-        # if name in needed_layers, append
-        # https://stackoverflow.com/questions/47260715/how-to-get-the-value-of-a-feature-in-a-layer-that-match-a-the-state-dict-in-pyto
         layer_outputs = []
         layer_outputs.append(x)
         i = 1
@@ -39,7 +36,7 @@ class Encoder(nn.Module):
             cur_input = layer_outputs[-1]
             cur_output = module(cur_input)
             layer_outputs.append(cur_output)
-            # print("feature%d: %s\t\t%s" % (i, name, cur_output.size()))
+            print("feature%d: %s\t\t%s" % (i, name, cur_output.size()))
             i += 1
 
         return layer_outputs
@@ -61,7 +58,7 @@ class Decoder_block(nn.Module):
         up = self.upsample(x)
         merged = torch.cat([up, skip_connection], dim=1)
 
-        # print(merged.size())
+        print(merged.size())
         output = self.relu(self.convB(self.convA(merged)))
         return output
 
@@ -136,7 +133,7 @@ class Decoder(nn.Module):
         return depth
 
 
-class Net(nn.Module):
+class Mob_v2(nn.Module):
     def __init__(self):
         super().__init__()
 
@@ -150,72 +147,6 @@ class Net(nn.Module):
         depth = self.decoder(features)
         return depth
 
-
-"""
-dense169
-3 4 6 8 12
-1664 256
-feature1: conv0         torch.Size([5, 64, 240, 320])
-feature2: norm0         torch.Size([5, 64, 240, 320])
-feature3: relu0         torch.Size([5, 64, 240, 320])
-feature4: pool0         torch.Size([5, 64, 120, 160])
-feature5: denseblock1           torch.Size([5, 256, 120, 160])
-feature6: transition1           torch.Size([5, 128, 60, 80])
-feature7: denseblock2           torch.Size([5, 512, 60, 80])
-feature8: transition2           torch.Size([5, 256, 30, 40])
-feature9: denseblock3           torch.Size([5, 1280, 30, 40])
-feature10: transition3          torch.Size([5, 640, 15, 20])
-feature11: denseblock4          torch.Size([5, 1664, 15, 20])
-feature12: norm5                torch.Size([5, 1664, 15, 20])
-torch.Size([5, 1920, 30, 40])
-torch.Size([5, 960, 60, 80])
-torch.Size([5, 480, 120, 160])
-torch.Size([5, 272, 240, 320])
-torch.Size([5, 1, 240, 320])
-"""
-
-"""
-dense121
-3 4 6 8 12
-1024 256
-feature1: conv0         torch.Size([5, 64, 240, 320])
-feature2: norm0         torch.Size([5, 64, 240, 320])
-feature3: relu0         torch.Size([5, 64, 240, 320])
-feature4: pool0         torch.Size([5, 64, 120, 160])
-feature5: denseblock1           torch.Size([5, 256, 120, 160])
-feature6: transition1           torch.Size([5, 128, 60, 80])
-feature7: denseblock2           torch.Size([5, 512, 60, 80])
-feature8: transition2           torch.Size([5, 256, 30, 40])
-feature9: denseblock3           torch.Size([5, 1024, 30, 40])
-feature10: transition3          torch.Size([5, 512, 15, 20])
-feature11: denseblock4          torch.Size([5, 1024, 15, 20])
-feature12: norm5                torch.Size([5, 1024, 15, 20])
-torch.Size([5, 1280, 30, 40])
-torch.Size([5, 640, 60, 80])
-torch.Size([5, 320, 120, 160])
-torch.Size([5, 192, 240, 320])
-torch.Size([5, 1, 240, 320])
-"""
-
-
-"""
-res50
-3 4 6 7 8
-2048 1024
-feature1: conv1         torch.Size([5, 64, 240, 320])
-feature2: bn1           torch.Size([5, 64, 240, 320])
-feature3: relu          torch.Size([5, 64, 240, 320])
-feature4: maxpool               torch.Size([5, 64, 120, 160])
-feature5: layer1                torch.Size([5, 256, 120, 160])
-feature6: layer2                torch.Size([5, 512, 60, 80])
-feature7: layer3                torch.Size([5, 1024, 30, 40])
-feature8: layer4                torch.Size([5, 2048, 15, 20])
-torch.Size([5, 3072, 30, 40])
-torch.Size([5, 1536, 60, 80])
-torch.Size([5, 576, 120, 160])
-torch.Size([5, 320, 240, 320])
-torch.Size([5, 1, 240, 320])
-"""
 
 """
 mobilenet_v2
@@ -244,5 +175,71 @@ torch.Size([5, 1376, 30, 40])
 torch.Size([5, 672, 60, 80])
 torch.Size([5, 344, 120, 160])
 torch.Size([5, 176, 240, 320])
+torch.Size([5, 1, 240, 320])
+"""
+
+
+"""
+res50
+3 4 6 7 8
+2048 1024
+feature1: conv1         torch.Size([5, 64, 240, 320])
+feature2: bn1           torch.Size([5, 64, 240, 320])
+feature3: relu          torch.Size([5, 64, 240, 320])
+feature4: maxpool               torch.Size([5, 64, 120, 160])
+feature5: layer1                torch.Size([5, 256, 120, 160])
+feature6: layer2                torch.Size([5, 512, 60, 80])
+feature7: layer3                torch.Size([5, 1024, 30, 40])
+feature8: layer4                torch.Size([5, 2048, 15, 20])
+torch.Size([5, 3072, 30, 40])
+torch.Size([5, 1536, 60, 80])
+torch.Size([5, 576, 120, 160])
+torch.Size([5, 320, 240, 320])
+torch.Size([5, 1, 240, 320])
+"""
+
+"""
+dense121
+3 4 6 8 12
+1024 256
+feature1: conv0         torch.Size([5, 64, 240, 320])
+feature2: norm0         torch.Size([5, 64, 240, 320])
+feature3: relu0         torch.Size([5, 64, 240, 320])
+feature4: pool0         torch.Size([5, 64, 120, 160])
+feature5: denseblock1           torch.Size([5, 256, 120, 160])
+feature6: transition1           torch.Size([5, 128, 60, 80])
+feature7: denseblock2           torch.Size([5, 512, 60, 80])
+feature8: transition2           torch.Size([5, 256, 30, 40])
+feature9: denseblock3           torch.Size([5, 1024, 30, 40])
+feature10: transition3          torch.Size([5, 512, 15, 20])
+feature11: denseblock4          torch.Size([5, 1024, 15, 20])
+feature12: norm5                torch.Size([5, 1024, 15, 20])
+torch.Size([5, 1280, 30, 40])
+torch.Size([5, 640, 60, 80])
+torch.Size([5, 320, 120, 160])
+torch.Size([5, 192, 240, 320])
+torch.Size([5, 1, 240, 320])
+"""
+
+"""
+dense169
+3 4 6 8 12
+1664 256
+feature1: conv0         torch.Size([5, 64, 240, 320])
+feature2: norm0         torch.Size([5, 64, 240, 320])
+feature3: relu0         torch.Size([5, 64, 240, 320])
+feature4: pool0         torch.Size([5, 64, 120, 160])
+feature5: denseblock1           torch.Size([5, 256, 120, 160])
+feature6: transition1           torch.Size([5, 128, 60, 80])
+feature7: denseblock2           torch.Size([5, 512, 60, 80])
+feature8: transition2           torch.Size([5, 256, 30, 40])
+feature9: denseblock3           torch.Size([5, 1280, 30, 40])
+feature10: transition3          torch.Size([5, 640, 15, 20])
+feature11: denseblock4          torch.Size([5, 1664, 15, 20])
+feature12: norm5                torch.Size([5, 1664, 15, 20])
+torch.Size([5, 1920, 30, 40])
+torch.Size([5, 960, 60, 80])
+torch.Size([5, 480, 120, 160])
+torch.Size([5, 272, 240, 320])
 torch.Size([5, 1, 240, 320])
 """
