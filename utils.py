@@ -52,6 +52,7 @@ def evaluate_model(model, loader, device):
     device: either CPU or CUDA
     """
     model.eval()
+    model = model.to(device)
     accuracies = []
     losses = []
     for i, batch in enumerate(loader):
@@ -76,6 +77,7 @@ def train_epoch(device, loader, model, criterion, optimizer):
     Use `optimizer` to optimize the specified `criterion`
     """
     model.train()
+    model = model.to(device)
     # for i, (X, y) in enumerate(data_loader):
     for i, batch in enumerate(loader):
         print("trainning... batch number", i)
