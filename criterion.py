@@ -32,12 +32,10 @@ class DepthLoss(nn.Module):
         super(DepthLoss, self).__init__()
         self.weight = weight
         self.l1_loss = nn.L1Loss()
-        self.SSIM = SSIM()
+        self.SSIM = SSIM(channel=1)
         self.gradient_loss = GradientLoss()
 
     def forward(self, pred: torch.Tensor, target: torch.Tensor):
-        return self.weight * self.l1_loss(pred, target) + self.gradient_loss(pred, target)
-        """
+        # return self.weight * self.l1_loss(pred, target) + self.gradient_loss(pred, target)
         return self.weight * self.l1_loss(pred, target) + self.gradient_loss(pred, target) + (
                     1 - self.SSIM(pred, target)) / 2
-        """
