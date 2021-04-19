@@ -86,6 +86,7 @@ def train_epoch(device, loader, model, criterion, optimizer):
         y = torch.Tensor(batch["depth"]).to(device)
         outputs = model(X)
         # calculate loss
+        criterion = criterion.to(device)
         loss = criterion(outputs, y)
         loss.backward()
         optimizer.step()

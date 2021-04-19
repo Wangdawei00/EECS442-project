@@ -36,7 +36,7 @@ def main(device=torch.device('cuda:0')):
 
     # TODO: define loss function, and optimizer
     learning_rate = utils.config("unet.learning_rate")
-    criterion = DepthLoss(0.1)
+    criterion = DepthLoss(0.1).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
     number_of_epoches = 10
     #
