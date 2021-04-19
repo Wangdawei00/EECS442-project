@@ -37,4 +37,4 @@ class DepthLoss(nn.Module):
 
     def forward(self, pred: torch.Tensor, target: torch.Tensor):
         return self.weight * self.l1_loss(pred, target) + self.gradient_loss(pred, target) + (
-                    1 - self.SSIM_loss(pred, target)) / 2
+                    1 - self.SSIM(pred, target)) / 2
