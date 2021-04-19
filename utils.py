@@ -82,7 +82,7 @@ def train_epoch(device, loader, model, criterion, optimizer):
     model = model.to(device)
     # for i, (X, y) in enumerate(data_loader):
     for i, batch in enumerate(loader):
-        print("trainning... batch number", i)
+        # print("trainning... batch number", i)
         optimizer.zero_grad()
         X = torch.Tensor(batch["image"]).to(device)
         y = torch.Tensor(batch["depth"]).to(device)
