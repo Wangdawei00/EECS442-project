@@ -32,7 +32,7 @@ def make_plot(tr_loss: list, tr_acc: list, va_loss, va_acc):
     fig.suptitle('Training plot across epochs')
     axes[0].set_xlabel('Epoch')
     axes[1].set_xlabel('Epoch')
-    axes[0].set_ylabel('Accuracy')
+    axes[0].set_ylabel('Error')
     axes[1].set_ylabel('Loss')
     x = np.arange(len(tr_loss))
     axes[0].plot(x, tr_acc, '--o')
