@@ -4,10 +4,11 @@ import random
 from data import getTrainingValidationTestingData
 from model import Net
 # from common import *
-# from utils import config
+from utils import config
 import utils
 from sklearn import metrics
 from torch.nn.functional import softmax
+import argparse as arg
 
 torch.manual_seed(42)
 np.random.seed(42)
@@ -15,11 +16,15 @@ random.seed(42)
 
 
 def main(device=torch.device('cuda:0')):
-    """Print performance metrics for model at specified epoch."""
+    # CLI arguments  
+    parser = arg.ArgumentParser(description='We all know what we are doing. Fighting!')
+    parser.add_argument("--datasize", "-d", default="small", type=str, help="data size you want to use, small, medium, total")
+    # Parsing
+    args = parser.parse_args()
     # Data loaders
-    pathname = "data/nyu_small.zip"
-    tr_loader, va_loader, te_loader = getTrainingValidationTestingData(pathname,
-                                                                       batch_size=utils.config("unet.batch_size"))
+    datasize = args.datasize
+    pathname = "data/nyu.zip"
+    tr_loader, va_loader, te_loader = getTrainingValidationTestingData(datasize, pathname, batch_size=config("unet.batch_size"))
 
     # Model
     model = Net()

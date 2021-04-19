@@ -5,7 +5,9 @@ from data import getTrainingValidationTestingData
 from model import Net
 # from common import *
 from criterion import DepthLoss
+from utils import config
 import utils
+import argparse as arg
 
 # from util import evaluate_model, make_plot, config
 
@@ -15,26 +17,19 @@ random.seed(42)
 
 
 def main(device=torch.device('cuda:0')):
-    """Train CNN and show training plots."""
+    # CLI arguments  
+    parser = arg.ArgumentParser(description='We all know what we are doing. Fighting!')
+    parser.add_argument("--datasize", "-d", default="small", type=str, help="data size you want to use, small, medium, total")
+    # Parsing
+    args = parser.parse_args()
     # Data loaders
-    """
-    if check_for_augmented_data("./data"):
-        tr_loader, va_loader, te_loader, _ = get_train_val_test_loaders(
-            task="target", batch_size=config("cnn.batch_size"), augment=True
-        )
-    else:
-        tr_loader, va_loader, te_loader, _ = get_train_val_test_loaders(
-            task="target",
-            batch_size=config("cnn.batch_size"),
-        )
-    """
-    # pathname = "drive/MyDrive/Dense-Depth/data/nyu.zip"
-    pathname = "data/nyu_small.zip"
-    tr_loader, va_loader, te_loader = getTrainingValidationTestingData(pathname,
-                                                                       batch_size=utils.config("unet.batch_size"))
+    datasize = args.datasize
+    pathname = "data/nyu.zip"
+    tr_loader, va_loader, te_loader = getTrainingValidationTestingData(datasize, pathname, batch_size=config("unet.batch_size"))
 
     # Model
     model = Net()
+    model = model.to(device)
 
     # TODO: define loss function, and optimizer
     learning_rate = utils.config("unet.learning_rate")
@@ -81,7 +76,7 @@ def main(device=torch.device('cuda:0')):
     # while curr_patience < patience:
     while epoch < number_of_epoches:
         # Train model
-        utils.train_epoch(tr_loader, model, criterion, optimizer)
+        utils.train_epoch(device, tr_loader, model, criterion, optimizer)
         tr_acc, tr_loss = utils.evaluate_model(model, tr_loader, device)
         va_acc, va_loss = utils.evaluate_model(model, va_loader, device)
         running_va_acc.append(va_acc)

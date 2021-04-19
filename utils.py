@@ -54,37 +54,39 @@ def evaluate_model(model, loader, device):
     model.eval()
     accuracies = []
     losses = []
-    with torch.no_grad:
-        for batch, truth in loader:
-            batch = batch.to(device)
-            truth = truth.to(device)
-            pred = model(batch)
-            accuracies.append(torch.mean(torch.abs(pred - truth) / truth).item())
-            loss = DepthLoss(0.1)
-            losses.append(loss(pred, truth).item())
-        acc = sum(accuracies) / len(accuracies)
-        loss = sum(losses) / len(losses)
-        print("Evaluation accuracy: {}".format(acc))
+    for i, batch in enumerate(loader):
+        X = torch.Tensor(batch["image"]).to(device)
+        y = torch.Tensor(batch["depth"]).to(device)
+        #batch = batch.to(device)
+        #truth = truth.to(device)
+        outputs = model(X)
+        accuracies.append(torch.mean(torch.abs(outputs - y) / y).item())
+        loss = DepthLoss(0.1)
+        losses.append(loss(outputs, y).item())
+    acc = sum(accuracies) / len(accuracies)
+    loss = sum(losses) / len(losses)
+    print("Evaluation accuracy: {}".format(acc))
     return acc, loss
 
 
-def train_epoch(data_loader, model, criterion, optimizer):
+def train_epoch(device, loader, model, criterion, optimizer):
     """
     Train the `model` for one epoch of data from `data_loader`.
 
     Use `optimizer` to optimize the specified `criterion`
     """
+    model.train()
     # for i, (X, y) in enumerate(data_loader):
-    for i, batch in enumerate(data_loader):
+    for i, batch in enumerate(loader):
         print("trainning... batch number", i)
         optimizer.zero_grad()
-        X = torch.Tensor(batch["image"])
-        y = torch.Tensor(batch["depth"])
+        X = torch.Tensor(batch["image"]).to(device)
+        y = torch.Tensor(batch["depth"]).to(device)
         outputs = model(X)
         # calculate loss
-        loss = criterion(outputs, y)
-        # gradient_loss = gradient_criterion(outputs, y, device="cuda")
-        loss.backward()
+        loss = DepthLoss(0.1)
+        losses = loss(outputs, y)
+        losses.backward()
         optimizer.step()
 
 
