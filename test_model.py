@@ -13,6 +13,7 @@ from dense169 import Dense169
 from dense121 import Dense121
 from res50 import Res50
 from mob_v2 import Mob_v2
+from squeeze import Squeeze
 
 torch.manual_seed(42)
 np.random.seed(42)
@@ -26,7 +27,8 @@ def main():
     # model = Dense169()
     # model = Dense121()
     # model = Res50()
-    model = Mob_v2()
+    # model = Mob_v2()
+    model = Squeeze()
     output = model(input)
     print(output.size())
 

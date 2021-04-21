@@ -3,6 +3,8 @@ import numpy as np
 import random
 from data import getTrainingValidationTestingData
 from model import Net
+from squeeze import Squeeze
+
 # from common import *
 from criterion import DepthLoss
 from utils import config
@@ -31,7 +33,8 @@ def main(device=torch.device('cuda:0')):
                                                                        batch_size=config("unet.batch_size"))
 
     # Model
-    model = Net()
+    # model = Net()
+    model = Squeeze()
     model = model.to(device)
 
     # TODO: define loss function, and optimizer
