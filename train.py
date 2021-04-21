@@ -3,76 +3,81 @@ import numpy as np
 import random
 from data import getTrainingValidationTestingData
 from model import Net
-# from common import *
 from criterion import DepthLoss
 from utils import config
 import utils
 import argparse as arg
+from res50 import Res50
+from dense169 import Dense169
+from dense121 import Dense121
+from mob_v2 import Mob_v2
 
-# from util import evaluate_model, make_plot, config
 
 torch.manual_seed(42)
 np.random.seed(42)
 random.seed(42)
 
+modelSelection = input('Please input the type of model to be used(res50,dense121,dense169,mob_v2,mob):')
+datasize = input('Please input the size you want to use(small/medium/total): ')
+pathname = "drive/MyDrive/Dense-Depth/data/nyu.zip"
+tr_loader, va_loader, te_loader = getTrainingValidationTestingData(datasize, pathname,
+                                                                   batch_size=config(modelSelection + ".batch_size"))
 
-def main(device=torch.device('cuda:0')):
+
+def main(device, tr_loader, va_loader, te_loader, modelSelection):
     """Train CNN and show training plots."""
     # CLI arguments
-    parser = arg.ArgumentParser(description='We all know what we are doing. Fighting!')
-    parser.add_argument("--datasize", "-d", default="small", type=str,
-                        help="data size you want to use, small, medium, total")
+    # parser = arg.ArgumentParser(description='We all know what we are doing. Fighting!')
+    # parser.add_argument("--datasize", "-d", default="small", type=str,
+    #                     help="data size you want to use, small, medium, total")
     # Parsing
-    args = parser.parse_args()
+    # args = parser.parse_args()
     # Data loaders
-    datasize = args.datasize
-    pathname = "data/nyu.zip"
-    tr_loader, va_loader, te_loader = getTrainingValidationTestingData(datasize, pathname,
-                                                                       batch_size=config("unet.batch_size"))
-
+    # datasize = args.datasiz
     # Model
-    model = Net()
+    if modelSelection.lower() == 'res50':
+        model = Res50()
+    elif modelSelection.lower() == 'dense121':
+        model = Dense121()
+    elif modelSelection.lower() == 'mobv2':
+        model = Mob_v2()
+    elif modelSelection.lower() == 'dense169':
+        model = Dense169()
+    elif modelSelection.lower() == 'mob':
+        model = Net()
+    else:
+        assert False, 'Wrong type of model selection string!'
+    # Model
     model = model.to(device)
 
     # TODO: define loss function, and optimizer
-    learning_rate = utils.config("unet.learning_rate")
+    learning_rate = utils.config(modelSelection + ".learning_rate")
     criterion = DepthLoss(0.1).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
     number_of_epoches = 10
     #
 
-    # print("Number of float-valued parameters:", util.count_parameters(model))
-
     # Attempts to restore the latest checkpoint if exists
     print("Loading unet...")
-    model, start_epoch, stats = utils.restore_checkpoint(model, utils.config("unet.checkpoint"))
+    model, start_epoch, stats = utils.restore_checkpoint(model, utils.config(modelSelection + ".checkpoint"))
 
-    # axes = utils.make_training_plot()
-
-    # Evaluate the randomly initialized model
-    # evaluate_epoch(
-    #     axes, tr_loader, va_loader, te_loader, model, criterion, start_epoch, stats
-    # )
-    # loss = criterion()
-
-    # initial val loss for early stopping
-    # prev_val_loss = stats[0][1]
-
-    running_va_loss = []
-    running_va_acc = []
-    running_tr_loss = []
-    running_tr_acc = []
-    # TODO: define patience for early stopping
-    # patience = 1
-    # curr_patience = 0
-    #
+    running_va_loss = [] if 'va_loss' not in stats else stats['va_loss']
+    running_va_acc = [] if 'va_err' not in stats else stats['va_err']
+    running_tr_loss = [] if 'tr_loss' not in stats else stats['tr_loss']
+    running_tr_acc = [] if 'tr_err' not in stats else stats['tr_err']
     tr_acc, tr_loss = utils.evaluate_model(model, tr_loader, device)
     acc, loss = utils.evaluate_model(model, va_loader, device)
     running_va_acc.append(acc)
     running_va_loss.append(loss)
     running_tr_acc.append(tr_acc)
     running_tr_loss.append(tr_loss)
-
+    stats = {
+        'va_err': running_va_acc,
+        'va_loss': running_va_loss,
+        'tr_err': running_tr_acc,
+        'tr_loss': running_tr_loss,
+        # 'num_of_epoch': 0
+    }
     # Loop over the entire dataset multiple times
     # for epoch in range(start_epoch, config('cnn.num_epochs')):
     epoch = start_epoch
@@ -80,34 +85,15 @@ def main(device=torch.device('cuda:0')):
     while epoch < number_of_epoches:
         # Train model
         utils.train_epoch(device, tr_loader, model, criterion, optimizer)
+        # Save checkpoint
+        utils.save_checkpoint(model, epoch + 1, utils.config(modelSelection + ".checkpoint"), stats)
+        # Evaluate model
         tr_acc, tr_loss = utils.evaluate_model(model, tr_loader, device)
         va_acc, va_loss = utils.evaluate_model(model, va_loader, device)
         running_va_acc.append(va_acc)
         running_va_loss.append(va_loss)
         running_tr_acc.append(tr_acc)
         running_tr_loss.append(tr_loss)
-        # Evaluate model
-        # evaluate_epoch(
-        #     axes, tr_loader, va_loader, te_loader, model, criterion, epoch + 1, stats
-        # )
-
-        # Save model parameters
-        utils.save_checkpoint(model, epoch + 1, utils.config("unet.checkpoint"), stats)
-
-        # update early stopping parameters
-        """
-        curr_patience, prev_val_loss = early_stopping(
-            stats, curr_patience, prev_val_loss
-        )
-        """
-
         epoch += 1
     print("Finished Training")
-    # Save figure and keep plot open
-    # utils.save_training_plot()
-    # utils.hold_training_plot()
     utils.make_plot(running_tr_loss, running_tr_acc, running_va_loss, running_va_acc)
-
-
-if __name__ == "__main__":
-    main()
