@@ -3,12 +3,9 @@ import numpy as np
 import random
 from data import getTrainingValidationTestingData
 from model import Net
-<<<<<<< HEAD
 from squeeze import Squeeze
 
 # from common import *
-=======
->>>>>>> c55845c5abe40698a2f083eb76b178a253ec2277
 from criterion import DepthLoss
 from utils import config
 import utils
@@ -54,11 +51,8 @@ def main(device, tr_loader, va_loader, te_loader, modelSelection):
     else:
         assert False, 'Wrong type of model selection string!'
     # Model
-<<<<<<< HEAD
     # model = Net()
     model = Squeeze()
-=======
->>>>>>> c55845c5abe40698a2f083eb76b178a253ec2277
     model = model.to(device)
 
     # TODO: define loss function, and optimizer
