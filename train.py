@@ -22,7 +22,8 @@ random.seed(42)
 
 modelSelection = input('Please input the type of model to be used(res50,dense121,dense169,mob_v2,mob):')
 datasize = input('Please input the size you want to use(small/medium/total): ')
-pathname = "drive/MyDrive/Dense-Depth/data/nyu.zip"
+filename = "nyu_new.zip"
+pathname = f"drive/MyDrive/Dense-Depth/data/{filename}"
 tr_loader, va_loader, te_loader = getTrainingValidationTestingData(datasize, pathname,
                                                                    batch_size=config(modelSelection + ".batch_size"))
 
@@ -36,7 +37,7 @@ def main(device, tr_loader, va_loader, te_loader, modelSelection):
     # Parsing
     # args = parser.parse_args()
     # Data loaders
-    # datasize = args.datasiz
+    # datasize = args.datasize
     # Model
     if modelSelection.lower() == 'res50':
         model = Res50()
@@ -48,11 +49,13 @@ def main(device, tr_loader, va_loader, te_loader, modelSelection):
         model = Dense169()
     elif modelSelection.lower() == 'mob':
         model = Net()
+    elif modelSelection.lower() == 'squeeze':
+        model = Squeeze()
     else:
         assert False, 'Wrong type of model selection string!'
     # Model
     # model = Net()
-    model = Squeeze()
+    # model = Squeeze()
     model = model.to(device)
 
     # TODO: define loss function, and optimizer

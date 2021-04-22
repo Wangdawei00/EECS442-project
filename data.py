@@ -104,8 +104,8 @@ class depthDatasetMemory(Dataset):
         return len(self.nyu_dataset)
 
 class ToTensor(object):
-    def __init__(self,is_test=False):
-        self.is_test = is_test
+    def __init__(self):
+        pass
 
     def __call__(self, sample):
         image, depth = sample['image'], sample['depth']
@@ -113,11 +113,7 @@ class ToTensor(object):
         image = self.to_tensor(image)
 
         depth = depth.resize((320, 240))
-
-        if self.is_test:
-            depth = self.to_tensor(depth).float() / 1000
-        else:            
-            depth = self.to_tensor(depth).float() * 1000
+        depth = self.to_tensor(depth).float() * 1000
         
         # put in expected range
         depth = torch.clamp(depth, 10, 1000)
@@ -157,19 +153,26 @@ class ToTensor(object):
         else:
             return img
 
-def getNoTransform(is_test=False):
+def getNoTransform():
     return transforms.Compose([
-        ToTensor(is_test=is_test)
+        ToTensor()
     ])
 
 def getDefaultTrainTransform():
     # Normalization
+    """
     normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
     return transforms.Compose([
         RandomHorizontalFlip(),
         RandomChannelSwap(0.5),
         ToTensor(),
         normalize
+    ])
+    """
+    return transforms.Compose([
+        RandomHorizontalFlip(),
+        RandomChannelSwap(0.5),
+        ToTensor()
     ])
 
 def getTrainingValidationTestingData(data_size, path, batch_size):
@@ -181,10 +184,10 @@ def getTrainingValidationTestingData(data_size, path, batch_size):
 
     return DataLoader(transformed_training, batch_size, shuffle=True), DataLoader(transformed_validation, batch_size, shuffle=False), DataLoader(transformed_testing, batch_size, shuffle=False)
    
-
-
-def load_testloader(data_size, path, batch_size=1):
-
+def getTestingData(data_size, path, batch_size):
     data, _, _, nyu2_test = loadZipToMem(path, data_size)
+    
     transformed_testing = depthDatasetMemory(data, nyu2_test, transform=getNoTransform())
+
     return DataLoader(transformed_testing, batch_size, shuffle=False)
+

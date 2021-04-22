@@ -1,7 +1,7 @@
 import torch
 import numpy as np
 import random
-from data import getTrainingValidationTestingData
+from data import getTestingData
 from model import Net
 # from common import *
 from utils import config
@@ -23,8 +23,9 @@ def main(device=torch.device('cuda:0')):
     args = parser.parse_args()
     # Data loaders
     datasize = args.datasize
-    pathname = "data/nyu.zip"
-    tr_loader, va_loader, te_loader = getTrainingValidationTestingData(datasize, pathname, batch_size=config("unet.batch_size"))
+    filename = "nyu_new.zip"
+    pathname = f"data/{filename}"
+    _, _, te_loader = getTestingData(datasize, pathname, batch_size=config("unet.batch_size"))
 
     # Model
     model = Net()
