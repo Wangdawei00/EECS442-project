@@ -45,7 +45,7 @@ def make_plot(tr_loss: list, tr_acc: list, va_loss, va_acc):
     plt.show()
 
 
-def evaluate_model(model, loader, device):
+def evaluate_model(model, loader, device, test=False):
     """
     Calculate and return the accuracy (average relative error) of the mode upon validation or test set.
 
@@ -56,18 +56,49 @@ def evaluate_model(model, loader, device):
     model.eval()
     model = model.to(device)
     accuracies = []
+    rms_error = []
+    log10_error = []
     losses = []
+    threshold_accuracy_1 = []
+    threshold_accuracy_2 = []
+    threshold_accuracy_3 = []
+    delta = 1.25
     with torch.no_grad():
         for i, batch in enumerate(loader):
             X = torch.Tensor(batch["image"]).to(device)
             y = torch.Tensor(batch["depth"]).to(device)
             outputs = model(X)
             accuracies.append(torch.mean(torch.abs(outputs - y) / y).item())
+            if test:
+                rms_error.append((torch.mean((outputs - y) ** 2) ** 0.5).item())
+                log10_error.append(torch.mean(torch.abs(torch.log10_(outputs / y))).item())
+                threshold_accuracy_1.append(
+                    torch.sum(torch.maximum(outputs / y, y / outputs) < delta).item() / (
+                            y.size(0) * y.size(2) * y.size(3)))
+                threshold_accuracy_2.append(
+                    torch.sum(torch.maximum(outputs / y, y / outputs) < delta ** 2).item() / (
+                            y.size(0) * y.size(2) * y.size(3)))
+                threshold_accuracy_3.append(
+                    torch.sum(torch.maximum(outputs / y, y / outputs) < delta ** 3).item() / (
+                            y.size(0) * y.size(2) * y.size(3)))
             loss = DepthLoss(0.1).to(device)
             losses.append(loss(outputs, y).item())
+
         acc = sum(accuracies) / len(accuracies)
         loss = sum(losses) / len(losses)
-    print("Evaluation Error: {}".format(acc))
+        if test:
+            rms = sum(rms_error) / len(rms_error)
+            log10_err = sum(log10_error) / len(log10_error)
+            threshold_1 = sum(threshold_accuracy_1) / len(threshold_accuracy_1)
+            threshold_2 = sum(threshold_accuracy_2) / len(threshold_accuracy_2)
+            threshold_3 = sum(threshold_accuracy_3) / len(threshold_accuracy_3)
+    print("Evaluation Average Relative Error: {}".format(acc))
+    if test:
+        print('Evaluation root mean square error: {}'.format(rms))
+        print('Evaluation log10 error: {}'.format(log10_err))
+        print('Evaluation threshold accuracy (1.25): {}'.format(threshold_1))
+        print('Evaluation threshold accuracy (1.25^2): {}'.format(threshold_2))
+        print('Evaluation threshold accuracy (1.25^3): {}'.format(threshold_3))
     print("Evaluation Loss: {}".format(loss))
     return acc, loss
 
