@@ -18,7 +18,8 @@ random.seed(42)
 def main(device=torch.device('cuda:0')):
     # CLI arguments  
     parser = arg.ArgumentParser(description='We all know what we are doing. Fighting!')
-    parser.add_argument("--datasize", "-d", default="small", type=str, help="data size you want to use, small, medium, total")
+    parser.add_argument("--datasize", "-d", default="small", type=str,
+                        help="data size you want to use, small, medium, total")
     # Parsing
     args = parser.parse_args()
     # Data loaders
@@ -37,7 +38,7 @@ def main(device=torch.device('cuda:0')):
     # Attempts to restore the latest checkpoint if exists
     print("Loading unet...")
     model, start_epoch, stats = utils.restore_checkpoint(model, utils.config("unet.checkpoint"))
-    acc, loss = utils.evaluate_model(model, te_loader, device)
+    acc, loss = utils.evaluate_model(model, te_loader, device, test=True)
     # axes = util.make_training_plot()
     print(f'Test Error:{acc}')
     print(f'Test Loss:{loss}')
