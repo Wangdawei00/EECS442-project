@@ -20,7 +20,7 @@ torch.manual_seed(42)
 np.random.seed(42)
 random.seed(42)
 
-modelSelection = input('Please input the type of model to be used(res50,dense121,dense169,mob_v2,mob):')
+modelSelection = input('Please input the type of model to be used(res50,dense121,dense169,mob_v2,mob,squeeze):')
 datasize = input('Please input the size you want to use(small/medium/total): ')
 filename = "nyu_new.zip"
 pathname = f"drive/MyDrive/Dense-Depth/data/{filename}"
@@ -105,3 +105,6 @@ def main(device, tr_loader, va_loader, te_loader, modelSelection):
         epoch += 1
     print("Finished Training")
     utils.make_plot(running_tr_loss, running_tr_acc, running_va_loss, running_va_acc)
+
+if __name__ == "__main__":
+    main(torch.device('cuda:0'), tr_loader, va_loader, te_loader, modelSelection)
