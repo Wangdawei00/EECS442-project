@@ -7,7 +7,7 @@ def split_total():
     ds_small = df.sample(frac=0.04)
     ds_total.to_csv('nyu_csv/nyu2_t.csv',index=False,header=False)
     ds_medium.to_csv('nyu_csv/nyu2_m.csv',index=False,header=False)
-    ds_medium.to_csv('nyu_csv/nyu2_s.csv',index=False,header=False)
+    ds_small.to_csv('nyu_csv/nyu2_s.csv',index=False,header=False)
 
 def split_trvatr():
     types = ['t', 'm', 's']
