@@ -25,7 +25,7 @@ def main(device=torch.device('cuda:0')):
     datasize = args.datasize
     filename = "nyu_new.zip"
     pathname = f"data/{filename}"
-    _, _, te_loader = getTestingData(datasize, pathname, batch_size=config("unet.batch_size"))
+    te_loader = getTestingData(datasize, pathname, batch_size=config("unet.batch_size"))
 
     # Model
     model = Net()
