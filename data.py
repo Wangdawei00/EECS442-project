@@ -57,25 +57,27 @@ class RandomChannelSwap(object):
         
         return {"image": image, "depth": depth}
 
-def loadZipToMem(zip_file, size):
+def loadZipToMem(zip_csv, zip_file, size):
     # Load zip file into memory
     print('Loading dataset zip file...', end='')
     from zipfile import ZipFile
     input_zip = ZipFile(zip_file)
+    csv_zip = ZipFile(zip_csv)
     data = {name: input_zip.read(name) for name in input_zip.namelist()}
+    csv = {name: csv_zip.read(name) for name in csv_zip.namelist()}
     
     if size == "total":
-        nyu2_train = list((row.split(',') for row in (data['data/nyu2_train.csv']).decode("utf-8").split('\n') if len(row) > 0))
-        nyu2_valid = list((row.split(',') for row in (data['data/nyu2_valid.csv']).decode("utf-8").split('\n') if len(row) > 0))
-        nyu2_test = list((row.split(',') for row in (data['data/nyu2_test.csv']).decode("utf-8").split('\n') if len(row) > 0))
+        nyu2_train = list((row.split(',') for row in (csv['nyu_csv/nyu2_train_t.csv']).decode("utf-8").split('\n') if len(row) > 0))
+        nyu2_valid = list((row.split(',') for row in (csv['nyu_csv/nyu2_valid_t.csv']).decode("utf-8").split('\n') if len(row) > 0))
+        nyu2_test = list((row.split(',') for row in (csv['nyu_csv/nyu2_test_t.csv']).decode("utf-8").split('\n') if len(row) > 0))
     if size == "medium":
-        nyu2_train = list((row.split(',') for row in (data['data/nyu2_train_m.csv']).decode("utf-8").split('\n') if len(row) > 0))
-        nyu2_valid = list((row.split(',') for row in (data['data/nyu2_valid_m.csv']).decode("utf-8").split('\n') if len(row) > 0))
-        nyu2_test = list((row.split(',') for row in (data['data/nyu2_test_m.csv']).decode("utf-8").split('\n') if len(row) > 0))
+        nyu2_train = list((row.split(',') for row in (csv['nyu_csv/nyu2_train_m.csv']).decode("utf-8").split('\n') if len(row) > 0))
+        nyu2_valid = list((row.split(',') for row in (csv['nyu_csv/nyu2_valid_m.csv']).decode("utf-8").split('\n') if len(row) > 0))
+        nyu2_test = list((row.split(',') for row in (csv['nyu_csv/nyu2_test_m.csv']).decode("utf-8").split('\n') if len(row) > 0))
     if size == "small":
-        nyu2_train = list((row.split(',') for row in (data['data/nyu2_train_s.csv']).decode("utf-8").split('\n') if len(row) > 0))
-        nyu2_valid = list((row.split(',') for row in (data['data/nyu2_valid_s.csv']).decode("utf-8").split('\n') if len(row) > 0))
-        nyu2_test = list((row.split(',') for row in (data['data/nyu2_test_s.csv']).decode("utf-8").split('\n') if len(row) > 0))
+        nyu2_train = list((row.split(',') for row in (csv['nyu_csv/nyu2_train_s.csv']).decode("utf-8").split('\n') if len(row) > 0))
+        nyu2_valid = list((row.split(',') for row in (csv['nyu_csv/nyu2_valid_s.csv']).decode("utf-8").split('\n') if len(row) > 0))
+        nyu2_test = list((row.split(',') for row in (csv['nyu_csv/nyu2_test_s.csv']).decode("utf-8").split('\n') if len(row) > 0))
     
     from sklearn.utils import shuffle
     nyu2_train = shuffle(nyu2_train, random_state=0)
@@ -175,8 +177,8 @@ def getDefaultTrainTransform():
         ToTensor()
     ])
 
-def getTrainingValidationTestingData(data_size, path, batch_size):
-    data, nyu2_train, nyu2_valid, nyu2_test = loadZipToMem(path, data_size)
+def getTrainingValidationTestingData(data_size, csv, path, batch_size):
+    data, nyu2_train, nyu2_valid, nyu2_test = loadZipToMem(csv, path, data_size)
 
     transformed_training = depthDatasetMemory(data, nyu2_train, transform=getDefaultTrainTransform())
     transformed_validation = depthDatasetMemory(data, nyu2_valid, transform=getNoTransform())
@@ -185,7 +187,7 @@ def getTrainingValidationTestingData(data_size, path, batch_size):
     return DataLoader(transformed_training, batch_size, shuffle=True), DataLoader(transformed_validation, batch_size, shuffle=False), DataLoader(transformed_testing, batch_size, shuffle=False)
    
 def getTestingData(data_size, path, batch_size):
-    data, _, _, nyu2_test = loadZipToMem(path, data_size)
+    data, _, _, nyu2_test = loadZipToMem(csv, path, data_size)
     
     transformed_testing = depthDatasetMemory(data, nyu2_test, transform=getNoTransform())
 

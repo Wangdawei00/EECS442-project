@@ -24,7 +24,8 @@ modelSelection = input('Please input the type of model to be used(res50,dense121
 datasize = input('Please input the size you want to use(small/medium/total): ')
 filename = "nyu_new.zip"
 pathname = f"drive/MyDrive/Dense-Depth/data/{filename}"
-tr_loader, va_loader, te_loader = getTrainingValidationTestingData(datasize, pathname,
+csv = "data/nyu_csv.zip"
+tr_loader, va_loader, te_loader = getTrainingValidationTestingData(datasize, csv, pathname,
                                                                    batch_size=config(modelSelection + ".batch_size"))
 
 
