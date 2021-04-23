@@ -186,7 +186,7 @@ def getTrainingValidationTestingData(data_size, csv, path, batch_size):
 
     return DataLoader(transformed_training, batch_size, shuffle=True), DataLoader(transformed_validation, batch_size, shuffle=False), DataLoader(transformed_testing, batch_size, shuffle=False)
    
-def getTestingData(data_size, path, batch_size):
+def getTestingData(data_size, csv, path, batch_size):
     data, _, _, nyu2_test = loadZipToMem(csv, path, data_size)
     
     transformed_testing = depthDatasetMemory(data, nyu2_test, transform=getNoTransform())
