@@ -1,0 +1,32 @@
+{
+  "mob": {
+    "checkpoint": "checkpoints/mob/",
+    "learning_rate": 1e-4,
+    "batch_size": 8
+  },
+  "mob_v2": {
+    "checkpoint": "checkpoints/mob_v2/",
+    "learning_rate": 1e-4,
+    "batch_size": 8
+  },
+  "dense169": {
+    "checkpoint": "checkpoints/dense169/",
+    "learning_rate": 1e-4,
+    "batch_size": 8
+  },
+  "dense121": {
+    "checkpoint": "checkpoints/dense121/",
+    "learning_rate": 1e-4,
+    "batch_size": 8
+  },
+  "res50": {
+    "checkpoint": "checkpoints/res50/",
+    "learning_rate": 1e-4,
+    "batch_size": 8
+  },
+  "squeeze": {
+    "checkpoint": "checkpoints/squeeze/",
+    "learning_rate": 1e-4,
+    "batch_size": 8
+  }
+}
