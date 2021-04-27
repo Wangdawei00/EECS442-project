@@ -1,10 +1,11 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
-from criterion import DepthLoss
 import os
 import itertools
 from tqdm import tqdm
+
+from criterion import DepthLoss
 
 
 def config(attr):
@@ -70,7 +71,7 @@ def evaluate_model(model, loader, device, test=False):
             outputs = model(X)
             accuracies.append(torch.mean(torch.abs(outputs - y) / y).item())
             if test:
-                rms_error.append((torch.mean((outputs - y) ** 2) ** 0.5).item())
+                rms_error.append((torch.mean((outputs / y - 1) ** 2) ** 0.5).item())
                 log10_error.append(torch.mean(torch.abs(torch.log10_(outputs / y))).item())
                 threshold_accuracy_1.append(
                     torch.sum(torch.maximum(outputs / y, y / outputs) < delta).item() / (
@@ -103,6 +104,46 @@ def evaluate_model(model, loader, device, test=False):
     return acc, loss
 
 
+def evaluate_final_model(model, loader, device):
+    """
+    Calculate and return the accuracy (average relative error) of the mode upon validation or test set.
+
+    model: the model to evaluate.
+    loader: the dataloader of test or validation set
+    device: either CPU or CUDA
+    """
+    model.eval()
+    model = model.to(device)
+    rel = []
+    rms = []
+    log10 = []
+    theta1 = []
+    theta2 = []
+    theta3 = []
+    losses = []
+    with torch.no_grad():
+        for i, batch in enumerate(loader):
+            X = torch.Tensor(batch["image"]).to(device)
+            y = torch.Tensor(batch["depth"]).to(device)
+            outputs = model(X)
+            rel.append(torch.mean(torch.abs(outputs - y) / y).item())
+            rms.append((torch.mean((outputs / y - 1) ** 2) ** 0.5 ).item())
+            log10.append(torch.mean(torch.abs(torch.log10(outputs) - torch.log10(y))).item())
+            theta1.append(torch.sum(torch.lt(torch.maximum(outputs/y, y/outputs), 1.25)) / y.nelement())
+            theta2.append(torch.sum(torch.lt(torch.maximum(outputs/y, y/outputs), 1.25 * 1.25)) / y.nelement())
+            theta3.append(torch.sum(torch.lt(torch.maximum(outputs/y, y/outputs), 1.25 * 1.25 * 1.25)) / y.nelement())
+            loss = DepthLoss(0.1).to(device)
+            losses.append(loss(outputs, y).item())
+        rel = sum(rel) / len(rel)
+        rms = sum(rms) / len(rms)
+        log10 = sum(log10) / len(log10)
+        theta1 = sum(theta1) / len(theta1)
+        theta2 = sum(theta2) / len(theta2)
+        theta3 = sum(theta3) / len(theta3)
+        loss = sum(losses) / len(losses)
+    return rel, rms, log10, theta1, theta2, theta3, loss
+
+
 def train_epoch(device, loader, model, criterion, optimizer):
     """
     Train the `model` for one epoch of data from `data_loader`.
@@ -111,7 +152,6 @@ def train_epoch(device, loader, model, criterion, optimizer):
     """
     model.train()
     model = model.to(device)
-    # for i, (X, y) in enumerate(data_loader):
     for i, batch in enumerate(loader):
         # print("trainning... batch number", i)
         optimizer.zero_grad()

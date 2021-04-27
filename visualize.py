@@ -1,26 +1,30 @@
 import torch
 import numpy as np
 import random
-from data import getTrainingValidationTestingData
-from model import Net
-from dense121 import Dense121
-from dense169 import Dense169
-# from common import *
-from utils import config
-import utils
 from sklearn import metrics
 from torch.nn.functional import softmax
-import argparse as arg
 from glob import glob
 from PIL import Image
 import matplotlib.cm as cm
 import cv2
+import os
+
+from utils import config
+import utils
+
+from res50 import Res50
+from dense121 import Dense121
+from dense169 import Dense169
+from dense161 import Dense161
+from mob_v2 import Mob_v2
+from mob_v1 import Net
+from squeeze import Squeeze
 
 torch.manual_seed(42)
 np.random.seed(42)
 random.seed(42)
 
-def colorize(value, vmin=10, vmax=1000, cmap="plasma"):
+def colorize(value, vmin=10, vmax=1000, cmap="viridis"):
 
     value = value.cpu().numpy()[0, :, :]
 
@@ -49,32 +53,29 @@ def load_images(image_files):
 
 
 def main(device=torch.device('cuda:0')):
-    # CLI arguments  
-    parser = arg.ArgumentParser(description='We all know what we are doing. Fighting!')
-    parser.add_argument("--datasize", "-d", default="small", type=str, help="data size you want to use, small, medium, total")
-    # Parsing
-    args = parser.parse_args()
-    # Data loaders
-    datasize = args.datasize
-    pathname = "data/nyu.zip"
-    tr_loader, va_loader, te_loader = getTrainingValidationTestingData(datasize, pathname, batch_size=config("unet.batch_size"))
-
     # Model
-    #model = Net()
-    #model = Dense121()
-    model = Dense169()
+    modelSelection = input('Please input the type of model to be used(res50,dense121,dense169,dense161,mob_v2,mob):')
+    if modelSelection.lower() == 'res50':
+        model = Res50()
+    elif modelSelection.lower() == 'dense121':
+        model = Dense121()
+    elif modelSelection.lower() == 'dense161':
+        model = Dense161()
+    elif modelSelection.lower() == 'mob_v2':
+        model = Mob_v2()
+    elif modelSelection.lower() == 'dense169':
+        model = Dense169()
+    elif modelSelection.lower() == 'mob':
+        model = Net()
+    elif modelSelection.lower() == 'squeeze':
+        model = Squeeze()
+    else:
+        assert False, 'Wrong type of model selection string!'
     model = model.to(device)
-
-    # define loss function
-    # criterion = torch.nn.L1Loss()
 
     # Attempts to restore the latest checkpoint if exists
     print("Loading unet...")
-    model, start_epoch, stats = utils.restore_checkpoint(model, utils.config("unet.checkpoint"))
-    #acc, loss = utils.evaluate_model(model, te_loader, device)
-    # axes = util.make_training_plot()
-    #print(f'Test Error:{acc}')
-    #print(f'Test Loss:{loss}')
+    model, start_epoch, stats = utils.restore_checkpoint(model, utils.config(modelSelection+".checkpoint"))
 
     # Get Test Images  
     img_list = glob("examples/"+"*.png")
@@ -97,7 +98,7 @@ def main(device=torch.device('cuda:0')):
 
         output = colorize(preds.data)
         output = output.transpose((1, 2, 0))
-        cv2.imwrite(img_name.split(".")[0]+"_result.png", output)
+        cv2.imwrite(img_name.split(".")[0]+"_"+modelSelection+"_result.png", output)
 
         print("Processing {} done.".format(img_name))
 

@@ -14,7 +14,46 @@ _check_pil = lambda x: isinstance(x, Image.Image)
 _check_np_img = lambda x: isinstance(x, np.ndarray)
 
 
+class AverageRGB(object):
+    # This need to go before ToTensor
+
+    def __init__(self, probability = 0.5):
+        self.probability = probability
+
+    def __call__(self, sample):
+
+        average = transforms.Grayscale(num_output_channels=3)
+        img, depth = sample["image"], sample["depth"]
+
+        if random.random() < self.probability:
+            img = average(img)
+
+        return {
+            "image": img, 
+            "depth": depth
+        }
+
+
+class Normalization(object):
+    # This need to go after ToTensor
+
+    def __call__(self, sample):
+
+        normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+        img, depth = sample["image"], sample["depth"]
+
+        img = normalize(img)
+
+        return {
+            "image": img, 
+            "depth": depth
+        }
+
+
 class RandomHorizontalFlip(object):
+
+    def __init__(self, probability = 0.5):
+        self.probability = probability
 
     def __call__(self, sample):
 
@@ -25,7 +64,7 @@ class RandomHorizontalFlip(object):
         if not _check_pil(depth):
             raise TypeError("Expected PIL type. Got {}".format(type(depth)))
 
-        if random.random() < 0.5:
+        if random.random() < self.probability:
             img = img.transpose(Image.FLIP_LEFT_RIGHT)
             depth = depth.transpose(Image.FLIP_LEFT_RIGHT)
 
@@ -37,7 +76,7 @@ class RandomHorizontalFlip(object):
 
 class RandomChannelSwap(object):
 
-    def __init__(self, probability):
+    def __init__(self, probability = 0.5):
         
         self.probability = probability
         self.indices = list(permutations(range(3), 3))
@@ -81,8 +120,6 @@ def loadZipToMem(zip_csv, zip_file, size):
     
     from sklearn.utils import shuffle
     nyu2_train = shuffle(nyu2_train, random_state=0)
-
-    #if True: nyu2_train = nyu2_train[:40]
 
     print('Loaded train ({0}).'.format(len(nyu2_train)))
     print('Loaded valid ({0}).'.format(len(nyu2_valid)))
@@ -155,32 +192,57 @@ class ToTensor(object):
         else:
             return img
 
-def getNoTransform():
-    return transforms.Compose([
-        ToTensor()
-    ])
-
-def getDefaultTrainTransform():
+def getNoTransform(normalization = False):
     # Normalization
-    """
-    normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
-    return transforms.Compose([
-        RandomHorizontalFlip(),
-        RandomChannelSwap(0.5),
-        ToTensor(),
-        normalize
-    ])
-    """
-    return transforms.Compose([
-        RandomHorizontalFlip(),
-        RandomChannelSwap(0.5),
-        ToTensor()
-    ])
+    if (normalization):
+        return transforms.Compose([
+            ToTensor(),
+            Normalization(),
+        ])
+    # Without Normalization
+    else:
+        return transforms.Compose([
+            ToTensor()
+        ])
 
-def getTrainingValidationTestingData(data_size, csv, path, batch_size):
+def getDefaultTrainTransform(normalization = False, greyscale = False):
+    # Normalization
+    if (normalization):
+        if (greyscale):
+            return transforms.Compose([
+                RandomHorizontalFlip(),
+                RandomChannelSwap(),
+                AverageRGB(),
+                ToTensor(),
+                Normalization(),
+            ])
+        else:
+            return transforms.Compose([
+                RandomHorizontalFlip(),
+                RandomChannelSwap(),
+                ToTensor(),
+                Normalization(),
+            ])
+    else:
+    # Without Normalization
+        if (greyscale):
+            return transforms.Compose([
+                RandomHorizontalFlip(),
+                RandomChannelSwap(),
+                AverageRGB(),
+                ToTensor()
+            ])
+        else:
+            return transforms.Compose([
+                RandomHorizontalFlip(),
+                RandomChannelSwap(),
+                ToTensor()
+            ])
+
+def getTrainingValidationTestingData(data_size, csv, path, batch_size, normalization = False, greyscale = False):
     data, nyu2_train, nyu2_valid, nyu2_test = loadZipToMem(csv, path, data_size)
 
-    transformed_training = depthDatasetMemory(data, nyu2_train, transform=getDefaultTrainTransform())
+    transformed_training = depthDatasetMemory(data, nyu2_train, transform=getDefaultTrainTransform(normalization, greyscale))
     transformed_validation = depthDatasetMemory(data, nyu2_valid, transform=getNoTransform())
     transformed_testing = depthDatasetMemory(data, nyu2_test, transform=getNoTransform())
 

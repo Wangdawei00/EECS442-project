@@ -1,19 +1,21 @@
 import torch
 import numpy as np
 import random
-from data import getTestingData
-from model import Net
-# from common import *
-from utils import config
-import utils
 from sklearn import metrics
 from torch.nn.functional import softmax
 import argparse as arg
 
+from data import getTestingData
+from utils import config
+import utils
+
 from res50 import Res50
 from dense169 import Dense169
 from dense121 import Dense121
+from dense161 import Dense161
 from mob_v2 import Mob_v2
+from mob_v1 import Net
+from squeeze import Squeeze
 
 
 torch.manual_seed(42)
@@ -28,11 +30,9 @@ def main(device=torch.device('cuda:0')):
                         help="data size you want to use, small, medium, total")
     # Parsing
     args = parser.parse_args()
-    # Data loaders
     
-    # TODO:
     ####### Enter the model selection here! #####
-    modelSelection = "mob_v2"
+    modelSelection = input('Please input the type of model to be used(res50,dense121,dense169,dense161,mob_v2,mob):')
     
     datasize = args.datasize
     filename = "nyu_new.zip"
@@ -45,6 +45,8 @@ def main(device=torch.device('cuda:0')):
         model = Res50()
     elif modelSelection.lower() == 'dense121':
         model = Dense121()
+    elif modelSelection.lower() == 'dense161':
+        model = Dense161()
     elif modelSelection.lower() == 'mob_v2':
         model = Mob_v2()
     elif modelSelection.lower() == 'dense169':
@@ -57,30 +59,24 @@ def main(device=torch.device('cuda:0')):
         assert False, 'Wrong type of model selection string!'
     model = model.to(device)
 
-    # define loss function
-    # criterion = torch.nn.L1Loss()
 
     # Attempts to restore the latest checkpoint if exists
-    print(f"Loading {mdoelSelection}...")
+    print(f"Loading {modelSelection}...")
     model, start_epoch, stats = utils.restore_checkpoint(model, utils.config(modelSelection+".checkpoint"))
+    # Evaluate metrics
     acc, loss = utils.evaluate_model(model, te_loader, device, test=True)
-    # axes = util.make_training_plot()
-    print(f'Test Error:{acc}')
+    # Another implementation to valuate metrics
+    """
+    rel, rms, log10, theta1, theta2, theta3, loss = utils.evaluate_final_model(model, te_loader, device)
+    print(f'Test rel Error:{rel}')
+    print(f'Test rms Error:{rms}')
+    print(f'Test log10 Error:{log10}')
+    print(f'Test theta1 Error:{theta1}')
+    print(f'Test theta2 Error:{theta2}')
+    print(f'Test theta3 Error:{theta3}')
     print(f'Test Loss:{loss}')
+    """
 
-    # Evaluate the model
-    # evaluate_epoch(
-    #     axes,
-    #     tr_loader,
-    #     va_loader,
-    #     te_loader,
-    #     model,
-    #     criterion,
-    #     start_epoch,
-    #     stats,
-    #     include_test=True,
-    #     update_plot=False,
-    # )
 
 
 if __name__ == "__main__":

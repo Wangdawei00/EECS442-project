@@ -10,7 +10,6 @@ class Encoder(nn.Module):
         super().__init__()
 
         # pretrained encoder
-        # TODO
         self.backbone = models.mobilenet_v2(pretrained=True)
 
         # do not train encoder
@@ -22,21 +21,11 @@ class Encoder(nn.Module):
         layer_outputs = []
         layer_outputs.append(x)
         i = 1
-        # TODO
-        # res
-        # for name, module in self.backbone._modules.items():
-        #     if name is not 'avgpool' and name is not 'fc':
-        #         cur_input = layer_outputs[-1]
-        #         cur_output = module(cur_input)
-        #         layer_outputs.append(cur_output)
-        # #         print("feature%d: %s\t\t%s" % (i, name, cur_output.size()))
-        #         i += 1
-        # dense / mobile
+
         for name, module in self.backbone.features._modules.items():
             cur_input = layer_outputs[-1]
             cur_output = module(cur_input)
             layer_outputs.append(cur_output)
-            # print("feature%d: %s\t\t%s" % (i, name, cur_output.size()))
             i += 1
 
         return layer_outputs
@@ -58,7 +47,6 @@ class Decoder_block(nn.Module):
         up = self.upsample(x)
         merged = torch.cat([up, skip_connection], dim=1)
 
-        # print(merged.size())
         output = self.relu(self.convB(self.convA(merged)))
         return output
 
@@ -66,27 +54,6 @@ class Decoder_block(nn.Module):
 class Decoder(nn.Module):
     def __init__(self, encoder_out=1664, skip=256):
         super().__init__()
-
-        # TODO
-        # dense
-        # b1_in = encoder_out + skip
-        # b1_out = encoder_out // 2
-        # b2_in = b1_out + skip // 2
-        # b2_out = b1_out // 2
-        # b3_in = b2_out + skip // 4
-        # b3_out = b2_out // 2
-        # b4_in = b3_out + skip // 4
-        # b4_out = b3_out // 2
-
-        # res
-        # b1_in = encoder_out + skip
-        # b1_out = encoder_out // 2
-        # b2_in = b1_out + skip // 2
-        # b2_out = b1_out // 2
-        # b3_in = b2_out + skip // 16
-        # b3_out = b2_out // 2
-        # b4_in = b3_out + skip // 16
-        # b4_out = b3_out // 2
 
         # mobile
         b1_in = encoder_out + skip
@@ -110,14 +77,6 @@ class Decoder(nn.Module):
         self.conv3 = nn.Conv2d(b4_out, 1, kernel_size=3, stride=1, padding=1)
 
     def forward(self, features):
-        # TODO
-        # dense
-        # conv1, pool1, pool2, pool3, encoder_output = features[
-        #     3], features[4], features[6], features[8], features[12]
-        # res
-        # conv1, pool1, pool2, pool3, encoder_output = features[
-        #     3], features[4], features[6], features[7], features[8]
-        # mobile
         conv1, pool1, pool2, pool3, encoder_output = features[
             2], features[4], features[7], features[14], features[19]
 
@@ -139,7 +98,6 @@ class Mob_v2(nn.Module):
 
         # encoder and decoder
         self.encoder = Encoder()
-        # TODO
         self.decoder = Decoder(1280, 96)
 
     def forward(self, x):
@@ -178,68 +136,3 @@ torch.Size([5, 176, 240, 320])
 torch.Size([5, 1, 240, 320])
 """
 
-
-"""
-res50
-3 4 6 7 8
-2048 1024
-feature1: conv1         torch.Size([5, 64, 240, 320])
-feature2: bn1           torch.Size([5, 64, 240, 320])
-feature3: relu          torch.Size([5, 64, 240, 320])
-feature4: maxpool               torch.Size([5, 64, 120, 160])
-feature5: layer1                torch.Size([5, 256, 120, 160])
-feature6: layer2                torch.Size([5, 512, 60, 80])
-feature7: layer3                torch.Size([5, 1024, 30, 40])
-feature8: layer4                torch.Size([5, 2048, 15, 20])
-torch.Size([5, 3072, 30, 40])
-torch.Size([5, 1536, 60, 80])
-torch.Size([5, 576, 120, 160])
-torch.Size([5, 320, 240, 320])
-torch.Size([5, 1, 240, 320])
-"""
-
-"""
-dense121
-3 4 6 8 12
-1024 256
-feature1: conv0         torch.Size([5, 64, 240, 320])
-feature2: norm0         torch.Size([5, 64, 240, 320])
-feature3: relu0         torch.Size([5, 64, 240, 320])
-feature4: pool0         torch.Size([5, 64, 120, 160])
-feature5: denseblock1           torch.Size([5, 256, 120, 160])
-feature6: transition1           torch.Size([5, 128, 60, 80])
-feature7: denseblock2           torch.Size([5, 512, 60, 80])
-feature8: transition2           torch.Size([5, 256, 30, 40])
-feature9: denseblock3           torch.Size([5, 1024, 30, 40])
-feature10: transition3          torch.Size([5, 512, 15, 20])
-feature11: denseblock4          torch.Size([5, 1024, 15, 20])
-feature12: norm5                torch.Size([5, 1024, 15, 20])
-torch.Size([5, 1280, 30, 40])
-torch.Size([5, 640, 60, 80])
-torch.Size([5, 320, 120, 160])
-torch.Size([5, 192, 240, 320])
-torch.Size([5, 1, 240, 320])
-"""
-
-"""
-dense169
-3 4 6 8 12
-1664 256
-feature1: conv0         torch.Size([5, 64, 240, 320])
-feature2: norm0         torch.Size([5, 64, 240, 320])
-feature3: relu0         torch.Size([5, 64, 240, 320])
-feature4: pool0         torch.Size([5, 64, 120, 160])
-feature5: denseblock1           torch.Size([5, 256, 120, 160])
-feature6: transition1           torch.Size([5, 128, 60, 80])
-feature7: denseblock2           torch.Size([5, 512, 60, 80])
-feature8: transition2           torch.Size([5, 256, 30, 40])
-feature9: denseblock3           torch.Size([5, 1280, 30, 40])
-feature10: transition3          torch.Size([5, 640, 15, 20])
-feature11: denseblock4          torch.Size([5, 1664, 15, 20])
-feature12: norm5                torch.Size([5, 1664, 15, 20])
-torch.Size([5, 1920, 30, 40])
-torch.Size([5, 960, 60, 80])
-torch.Size([5, 480, 120, 160])
-torch.Size([5, 272, 240, 320])
-torch.Size([5, 1, 240, 320])
-"""

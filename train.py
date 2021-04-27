@@ -1,49 +1,48 @@
 import torch
 import numpy as np
 import random
-from data import getTrainingValidationTestingData
-from model import Net
-from squeeze import Squeeze
+import argparse as arg
 
-# from common import *
+from data import getTrainingValidationTestingData
 from criterion import DepthLoss
 from utils import config
 import utils
-import argparse as arg
+
 from res50 import Res50
 from dense169 import Dense169
 from dense121 import Dense121
+from dense161 import Dense161
 from mob_v2 import Mob_v2
+from mob_v1 import Net
+from squeeze import Squeeze
 
 
 torch.manual_seed(42)
 np.random.seed(42)
 random.seed(42)
 
-modelSelection = input('Please input the type of model to be used(res50,dense121,dense169,mob_v2,mob,squeeze):')
+modelSelection = input('Please input the type of model to be used(res50,dense121,dense169,dense161,mob_v2,mob,squeeze):')
 datasize = input('Please input the size you want to use(small/medium/total): ')
-filename = "nyu_new.zip"
-pathname = f"drive/MyDrive/Dense-Depth/data/{filename}"
+normal = input('Please input whether you want to do normalization(1 for yes/0 for no): ')
+normalization = (int(normal) == 1)
+grey = input('Please input whether you want to do greyscale as an augmentation(1 for yes/0 for no): ')
+greyscale = (int(grey) == 1)
+filename = "data/nyu_new.zip"
+pathname = f"drive/MyDrive/Dense-Depth/{filename}"
 csv = "data/nyu_csv.zip"
-tr_loader, va_loader, te_loader = getTrainingValidationTestingData(datasize, csv, pathname,
-                                                                   batch_size=config(modelSelection + ".batch_size"))
+tr_loader, va_loader, te_loader = getTrainingValidationTestingData(datasize, csv, filename,
+                                                                   batch_size=config(modelSelection + ".batch_size"), normalization = normalization, greyscale = greyscale)
 
 
 def main(device, tr_loader, va_loader, te_loader, modelSelection):
     """Train CNN and show training plots."""
-    # CLI arguments
-    # parser = arg.ArgumentParser(description='We all know what we are doing. Fighting!')
-    # parser.add_argument("--datasize", "-d", default="small", type=str,
-    #                     help="data size you want to use, small, medium, total")
-    # Parsing
-    # args = parser.parse_args()
-    # Data loaders
-    # datasize = args.datasize
     # Model
     if modelSelection.lower() == 'res50':
         model = Res50()
     elif modelSelection.lower() == 'dense121':
         model = Dense121()
+    elif modelSelection.lower() == 'dense161':
+        model = Dense161()
     elif modelSelection.lower() == 'mobv2':
         model = Mob_v2()
     elif modelSelection.lower() == 'dense169':
@@ -54,9 +53,6 @@ def main(device, tr_loader, va_loader, te_loader, modelSelection):
         model = Squeeze()
     else:
         assert False, 'Wrong type of model selection string!'
-    # Model
-    # model = Net()
-    # model = Squeeze()
     model = model.to(device)
 
     # TODO: define loss function, and optimizer
@@ -85,12 +81,9 @@ def main(device, tr_loader, va_loader, te_loader, modelSelection):
         'va_loss': running_va_loss,
         'tr_err': running_tr_acc,
         'tr_loss': running_tr_loss,
-        # 'num_of_epoch': 0
     }
     # Loop over the entire dataset multiple times
-    # for epoch in range(start_epoch, config('cnn.num_epochs')):
     epoch = start_epoch
-    # while curr_patience < patience:
     while epoch < number_of_epoches:
         # Train model
         utils.train_epoch(device, tr_loader, model, criterion, optimizer)
